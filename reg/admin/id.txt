@@ -1,0 +1,43 @@
+id - admin
+pass - admin123
+
+
+
+id - cmrit_user
+pass - cmrit_user
+
+
+
+
+
+
+
+
+
+#sudo mysql_secure_installation
+no 
+yes
+yes
+all yes…
+---------------------------
+#after step 5 
+
+ctrl + x
+y
+enter
+
+------------------------
+step 6 
+end 
+sudo chown -R www-data:www-data /var/www/html/
+sudo chmod -R 755 /var/www/html/
+sudo find /var/www/html/ -type d -exec chmod 755 {} \;
+sudo find /var/www/html/ -type f -exec chmod 644 {} \;
+
+------------------------------
+skip step 7
+
+instead do 
+mysql -u root cmrit_db < DB/cmrit_db.sql
+mysql -u root cmrit_db < DB/existstudents.sql
+
