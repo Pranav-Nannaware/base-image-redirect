@@ -13,7 +13,7 @@
   <body class="font-roboto">
     <header
       class="relative bg-cover bg-center h-screen"
-      style="background-image: url('image.png')"
+      style="background-image: url('images/image.png')"
     >
       <div class="absolute inset-0 bg-black opacity-40"></div>
       <!-- <div class="absolute inset-0 bg-gray-900 opacity-50"></div>
@@ -46,7 +46,7 @@
             alt="School logo"
             class="h-12"
             height="50"
-            src="https://placehold.co/50x50?text=Logo"
+            src="images/logo1.jpg"
             width="50"
           />
           <div>
@@ -55,6 +55,13 @@
             </h1>
             <p>19/2, TP scheme, Shivajinagar, Pune, Maharashtra 411005</p>
           </div>
+          <img
+            alt="Secondary logo"
+            class="h-12 ml-4"
+            src="images/logo2.jpg"
+            width="50"
+            height="50"
+          />
         </div>
         <nav class="flex items-center space-x-8">
           <!-- <a class="hover:underline" href="#"> Home </a>

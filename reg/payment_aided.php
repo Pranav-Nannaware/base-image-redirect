@@ -369,7 +369,7 @@ function getFileErrorMessage($errorCode) {
             <br><br>
             <button type="submit" name="generate_receipt" class="generate-button">Generate Receipt</button>
             <div class="note">
-            <p>Note: Make sure that the UPI transaction ID is visible in the screenshot.</p>    
+            <p>Note: Make sure that the UPI transaction ID   is visible in the screenshot.</p>    
             <p>Note: Log in again to download the receipt as soon as the admin generates it.</p>
             </div>
         </form>
