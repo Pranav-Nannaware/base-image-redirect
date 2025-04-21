@@ -291,7 +291,7 @@ if (isset($_GET['download']) && $_GET['download'] == 'pdf') {
   <button class="print-btn no-print" onclick="window.print()">Print Receipt</button>
   <div class="receipt-container">
    <div class="flex justify-between items-center mb-4">
-    <img alt="School logo" class="logo-img border border-green-500 p-2" src="https://placehold.co/100x100"/>
+    <img alt="School logo" class="logo-img border p-2" src="../images/logo.png"/>
     <div class="school-header">
      <h1 class="font-bold">
       V.P.Sabha's
