@@ -2,12 +2,12 @@
 // payment_aided.php - Secure Payment Page for Aided Students with receipt storage in DB
 
 // Enforce HTTPS connection
-if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === "off") {
-    $redirect = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-    header('HTTP/1.1 301 Moved Permanently');
-    header('Location: ' . $redirect);
-    exit();
-}
+// if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === "off") {
+//     $redirect = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+//     header('HTTP/1.1 301 Moved Permanently');
+//     header('Location: ' . $redirect);
+//     exit();
+// }
 
 // Start secure session with strict settings
 session_start([
@@ -43,7 +43,7 @@ $feeDetails = [
         'component' => 'Stationary Fees',
         'account'   => '471302010950644',
         'amount'    => 3000,
-        'qr'        => 'uploads/UNAIDED STATIONARY.png'
+        'qr'        => 'uploads/STATIONARY.png'
     ],
     [
         'component' => 'C.S Fees (for CS Students only)',
@@ -369,7 +369,8 @@ function getFileErrorMessage($errorCode) {
             <br><br>
             <button type="submit" name="generate_receipt" class="generate-button">Generate Receipt</button>
             <div class="note">
-                <p>Note: Log in again to download the receipt as soon as the admin generates it.</p>
+            <p>Note: Make sure that the UPI transaction ID is visible in the screenshot.</p>    
+            <p>Note: Log in again to download the receipt as soon as the admin generates it.</p>
             </div>
         </form>
     </div>

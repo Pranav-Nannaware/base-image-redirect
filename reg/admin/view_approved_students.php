@@ -618,8 +618,8 @@
                                             </span>
                                             <?php if ($student['has_tuition_receipt'] === 'Yes'): ?>
                                                 <div class="receipt-actions">
-                                                    <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'tuition')" 
-                                                    class="view-link">View</a>
+                                                    <!-- <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'tuition')" 
+                                                    class="view-link">View</a> -->
                                                 </div>
                                             <?php endif; ?>
                                         </td>
@@ -631,8 +631,8 @@
                                             </span>
                                             <?php if ($student['has_stationary_receipt'] === 'Yes'): ?>
                                                 <div class="receipt-actions">
-                                                    <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'stationary')" 
-                                                    class="view-link">View</a>
+                                                    <!-- <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'stationary')" 
+                                                    class="view-link">View</a> -->
                                                 </div>
                                             <?php endif; ?>
                                         </td>
@@ -644,8 +644,8 @@
                                             </span>
                                             <?php if ($student['has_cs_receipt'] === 'Yes'): ?>
                                                 <div class="receipt-actions">
-                                                    <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'cs')" 
-                                                    class="view-link">View</a>
+                                                    <!-- <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'cs')" 
+                                                    class="view-link">View</a> -->
                                                 </div>
                                             <?php endif; ?>
                                         </td>
@@ -657,8 +657,8 @@
                                             </span>
                                             <?php if ($student['has_it_receipt'] === 'Yes'): ?>
                                                 <div class="receipt-actions">
-                                                    <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'it')" 
-                                                    class="view-link">View</a>
+                                                    <!-- <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'it')" 
+                                                    class="view-link">View</a> -->
                                                 </div>
                                             <?php endif; ?>
                                         </td>
@@ -670,8 +670,8 @@
                                             </span>
                                             <?php if ($student['has_pta_receipt'] === 'Yes'): ?>
                                                 <div class="receipt-actions">
-                                                    <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'pta')" 
-                                                    class="view-link">View</a>
+                                                    <!-- <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'pta')" 
+                                                    class="view-link">View</a> -->
                                                 </div>
                                             <?php endif; ?>
                                         </td>
