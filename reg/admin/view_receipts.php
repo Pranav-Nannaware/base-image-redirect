@@ -451,6 +451,7 @@ if ($authenticated) {
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow-x: auto; /* Add horizontal scroll for wide tables */
         }
         h1, h2 {
             text-align: center;
@@ -522,11 +523,15 @@ if ($authenticated) {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            table-layout: fixed; /* Fixed layout for better control */
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 10px;
+            padding: 8px;
             text-align: center;
+            font-size: 0.9rem;
+            word-wrap: break-word; /* Allow text to wrap */
+            overflow: hidden;
         }
         th {
             background-color: #2c3e50;
@@ -539,6 +544,8 @@ if ($authenticated) {
             padding: 5px 10px;
             border-radius: 3px;
             font-size: 12px;
+            display: block;
+            margin-bottom: 8px;
         }
         .status-yes {
             background-color: #e1f5e1;
@@ -550,12 +557,20 @@ if ($authenticated) {
         }
         .view-link, .delete-link {
             display: inline-block;
-            padding: 5px 10px;
+            padding: 4px 6px;
             color: white;
             text-decoration: none;
             border-radius: 3px;
-            font-size: 12px;
-            margin: 3px;
+            font-size: 11px;
+            margin: 1px;
+            min-width: 40px;
+            text-align: center;
+        }
+        .receipt-actions {
+            display: flex;
+            justify-content: center;
+            gap: 3px;
+            flex-wrap: wrap; /* Allow buttons to wrap on very small screens */
         }
         .view-link {
             background-color: #3498db;
@@ -784,16 +799,16 @@ if ($authenticated) {
                     <table>
                         <thead>
                             <tr>
-                                <th>Reg #</th>
-                                <th>Name</th>
-                                <th>Type</th>
-                                <th>Division</th>
-                                <th>Tuition Receipt</th>
-                                <th>Stationary Receipt</th>
-                                <th>CS Receipt</th>
-                                <th>IT Receipt</th>
-                                <th>PTA Receipt</th>
-                                <th>Action</th>
+                                <th style="width: 8%;">Reg #</th>
+                                <th style="width: 15%;">Name</th>
+                                <th style="width: 7%;">Type</th>
+                                <th style="width: 5%;">Division</th>
+                                <th style="width: 11%;">Tuition Receipt</th>
+                                <th style="width: 11%;">Stationary Receipt</th>
+                                <th style="width: 11%;">CS Receipt</th>
+                                <th style="width: 11%;">IT Receipt</th>
+                                <th style="width: 11%;">PTA Receipt</th>
+                                <th style="width: 10%;">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -810,10 +825,11 @@ if ($authenticated) {
                                             <?php echo $student['has_tuition_receipt']; ?>
                                         </span>
                                         <?php if ($student['has_tuition_receipt'] === 'Yes'): ?>
-                                            <br><br>
                                             <div class="receipt-actions">
                                                 <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'tuition')" 
                                                    class="view-link">View</a>
+                                                <a href="javascript:void(0);" onclick="confirmDeleteReceipt(<?php echo $student['id']; ?>, 'tuition')" 
+                                                   class="delete-link">Delete</a>
                                             </div>
                                         <?php endif; ?>
                                     </td>
@@ -824,10 +840,11 @@ if ($authenticated) {
                                             <?php echo $student['has_stationary_receipt']; ?>
                                         </span>
                                         <?php if ($student['has_stationary_receipt'] === 'Yes'): ?>
-                                            <br><br>
                                             <div class="receipt-actions">
                                                 <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'stationary')" 
                                                    class="view-link">View</a>
+                                                <a href="javascript:void(0);" onclick="confirmDeleteReceipt(<?php echo $student['id']; ?>, 'stationary')" 
+                                                   class="delete-link">Delete</a>
                                             </div>
                                         <?php endif; ?>
                                     </td>
@@ -838,10 +855,11 @@ if ($authenticated) {
                                             <?php echo $student['has_cs_receipt']; ?>
                                         </span>
                                         <?php if ($student['has_cs_receipt'] === 'Yes'): ?>
-                                            <br><br>
                                             <div class="receipt-actions">
                                                 <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'cs')" 
                                                    class="view-link">View</a>
+                                                <a href="javascript:void(0);" onclick="confirmDeleteReceipt(<?php echo $student['id']; ?>, 'cs')" 
+                                                   class="delete-link">Delete</a>
                                             </div>
                                         <?php endif; ?>
                                     </td>
@@ -852,10 +870,11 @@ if ($authenticated) {
                                             <?php echo $student['has_it_receipt']; ?>
                                         </span>
                                         <?php if ($student['has_it_receipt'] === 'Yes'): ?>
-                                            <br><br>
                                             <div class="receipt-actions">
                                                 <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'it')" 
                                                    class="view-link">View</a>
+                                                <a href="javascript:void(0);" onclick="confirmDeleteReceipt(<?php echo $student['id']; ?>, 'it')" 
+                                                   class="delete-link">Delete</a>
                                             </div>
                                         <?php endif; ?>
                                     </td>
@@ -866,10 +885,11 @@ if ($authenticated) {
                                             <?php echo $student['has_pta_receipt']; ?>
                                         </span>
                                         <?php if ($student['has_pta_receipt'] === 'Yes'): ?>
-                                            <br><br>
                                             <div class="receipt-actions">
                                                 <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'pta')" 
                                                    class="view-link">View</a>
+                                                <a href="javascript:void(0);" onclick="confirmDeleteReceipt(<?php echo $student['id']; ?>, 'pta')" 
+                                                   class="delete-link">Delete</a>
                                             </div>
                                         <?php endif; ?>
                                     </td>
@@ -953,6 +973,15 @@ if ($authenticated) {
         function rejectStudent(studentId) {
             if (confirm("Are you sure you want to REJECT this student? This will mark them as rejected in the records.")) {
                 window.location.href = "?reject_student=1&student_id=" + studentId + 
+                    "&csrf_token=<?php echo $_SESSION['csrf_token']; ?>";
+            }
+        }
+        
+        // Receipt deletion confirmation function
+        function confirmDeleteReceipt(studentId, receiptType) {
+            if (confirm("Are you sure you want to DELETE this " + receiptType + " receipt? This action cannot be undone.")) {
+                window.location.href = "?delete_receipt=1&student_id=" + studentId + 
+                    "&receipt_type=" + receiptType + 
                     "&csrf_token=<?php echo $_SESSION['csrf_token']; ?>";
             }
         }

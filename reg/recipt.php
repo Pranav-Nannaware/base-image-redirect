@@ -259,6 +259,7 @@ if (isset($_GET['download']) && $_GET['download'] == 'pdf') {
        margin: 0.25rem 0;
    }
    .school-header {
+       margin-right: 75px;
        text-align: center;
    }
    .school-header h1, .school-header h2 {
