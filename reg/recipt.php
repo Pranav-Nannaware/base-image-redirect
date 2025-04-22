@@ -95,13 +95,14 @@ $next_year = $current_year + 1;
 $academic_year = $current_year . "-" . substr($next_year, -2);
 
 // Calculate fee amounts based on whether receipt exists
-$fee_hsc = 1000; // HSC fee is always charged
-$fee_tuition = ($student['receipt_tuition'] !== null) ? 13450 : 0;
+
+$fee_tuition = ($student['receipt_tuition'] !== null) ? 
+    ($student['registration_type'] == 'Aided' ? 340 : 13450) : 0;
 $fee_stationary = ($student['receipt_stationary'] !== null) ? 3000 : 0;
 $fee_cs = ($student['receipt_cs'] !== null) ? 19800 : 0;
 $fee_it = ($student['receipt_it'] !== null) ? 7000 : 0;
 $fee_pta = ($student['receipt_pta'] !== null) ? 200 : 0;
-$fee_total = $fee_hsc + $fee_tuition + $fee_stationary + $fee_cs + $fee_it + $fee_pta;
+$fee_total = + $fee_tuition + $fee_stationary + $fee_cs + $fee_it + $fee_pta;
 
 // Convert number to words function
 function numberToWords($number) {
@@ -291,7 +292,7 @@ if (isset($_GET['download']) && $_GET['download'] == 'pdf') {
   <button class="print-btn no-print" onclick="window.print()">Print Receipt</button>
   <div class="receipt-container">
    <div class="flex justify-between items-center mb-4">
-    <img alt="School logo" class="logo-img border p-2" src="../images/logo.png"/>
+    <img alt="School logo" class="logo-img  " src="../images/logo2.jpg"/>
     <div class="school-header">
      <h1 class="font-bold">
       V.P.Sabha's
@@ -346,14 +347,14 @@ if (isset($_GET['download']) && $_GET['download'] == 'pdf') {
      </tr>
     </thead>
     <tbody>
-     <tr>
+     <!-- <tr>
       <td class="border border-black">
        HSC EXAM FEES
       </td>
       <td class="border border-black">
        <?php echo $fee_hsc; ?>/-
       </td>
-     </tr>
+     </tr> -->
      <tr <?php if ($fee_tuition == 0) echo 'class="fee-row-inactive"'; ?>>
       <td class="border border-black">
        TUITION FEES
@@ -419,8 +420,14 @@ if (isset($_GET['download']) && $_GET['download'] == 'pdf') {
     
    <div class="flex justify-between items-center footer-section">
     <div>
-     <p class="font-bold">
-      Principal
+    
+    </div>
+    <div>
+     <p>
+      <!-- Date: <?php echo $current_date; ?> -->
+      <br></br>
+      <p class="font-bold text-center">
+            Principal
      </p>
      <p>
       Bharat English School &amp;
@@ -428,10 +435,6 @@ if (isset($_GET['download']) && $_GET['download'] == 'pdf') {
      <p>
       Junior College, Pune 5
      </p>
-    </div>
-    <div>
-     <p>
-      Date: <?php echo $current_date; ?>
      </p>
     </div>
    </div>

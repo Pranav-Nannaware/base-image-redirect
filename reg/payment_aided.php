@@ -36,7 +36,7 @@ $feeDetails = [
     [
         'component' => 'Tuition Fees',
         'account'   => '471301010977915',
-        'amount'    => 13450,
+        'amount'    => 340,
         'qr'        => 'uploads/UNAIDED TUTION.png'
     ],
     [
