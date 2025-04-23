@@ -106,6 +106,15 @@ if ($authenticated) {
     $stmt->execute($params);
     $students = $stmt->fetchAll();
     
+    // Check which students are in the approvedstudents table
+    $approved_students = [];
+    $stmt = $pdo->prepare("SELECT registration_number FROM approvedstudents");
+    $stmt->execute();
+    $result = $stmt->fetchAll();
+    foreach ($result as $row) {
+        $approved_students[] = $row['registration_number'];
+    }
+    
     // For viewing individual receipts
     if (isset($_GET['view_receipt']) && isset($_GET['student_id']) && isset($_GET['receipt_type'])) {
         $student_id = $_GET['student_id'];
@@ -845,7 +854,9 @@ if ($authenticated) {
                         <tbody>
                             <?php foreach ($students as $student): ?>
                                 <tr>
-                                    <td><?php echo htmlspecialchars($student['registration_number']); ?></td>
+                                    <td <?php if (in_array($student['registration_number'], $approved_students)): ?>style="border: 2px solid green; background-color: rgba(0, 128, 0, 0.1); font-weight: bold;"<?php endif; ?>>
+                                        <?php echo htmlspecialchars($student['registration_number']); ?>
+                                    </td>
                                     <td><?php echo htmlspecialchars($student['name_of_student']); ?></td>
                                     <td><?php echo htmlspecialchars($student['registration_type']); ?></td>
                                     <td><?php echo htmlspecialchars($student['division']); ?></td>
