@@ -201,108 +201,132 @@ if ($authenticated) {
             $approve_error = "Invalid security token. Please try again.";
         } else {
             $student_id = $_GET['student_id'];
+            $receipt_types = isset($_GET['receipt_types']) ? json_decode($_GET['receipt_types'], true) : [];
             
-            try {
-                // First check if the student exists in existstudents
-                $stmt = $pdo->prepare("SELECT * FROM existstudents WHERE id = :id");
-                $stmt->bindParam(':id', $student_id, PDO::PARAM_INT);
-                $stmt->execute();
-                $student = $stmt->fetch();
-                
-                if ($student) {
-                    // Check if the approvedstudents table exists, if not create it
-                    $stmt = $pdo->prepare("SHOW TABLES LIKE 'approvedstudents'");
+            if (empty($receipt_types)) {
+                $approve_error = "No receipts were selected for approval.";
+            } else {
+                try {
+                    // First check if the student exists in existstudents
+                    $stmt = $pdo->prepare("SELECT * FROM existstudents WHERE id = :id");
+                    $stmt->bindParam(':id', $student_id, PDO::PARAM_INT);
                     $stmt->execute();
-                    if ($stmt->rowCount() == 0) {
-                        // Create the approvedstudents table with the same structure as existstudents
-                        $pdo->exec("CREATE TABLE approvedstudents LIKE existstudents");
-                        // Add approval_date column
-                        $pdo->exec("ALTER TABLE approvedstudents ADD COLUMN approval_date DATETIME DEFAULT NULL");
-                        $pdo->exec("ALTER TABLE approvedstudents ADD COLUMN status ENUM('approved', 'rejected') DEFAULT 'approved'");
-                    } else {
-                        // Check if approval_date column exists, if not add it
-                        $stmt = $pdo->prepare("SHOW COLUMNS FROM approvedstudents LIKE 'approval_date'");
+                    $student = $stmt->fetch();
+                    
+                    if ($student) {
+                        // Check if the approvedstudents table exists, if not create it
+                        $stmt = $pdo->prepare("SHOW TABLES LIKE 'approvedstudents'");
                         $stmt->execute();
                         if ($stmt->rowCount() == 0) {
+                            // Create the approvedstudents table with the same structure as existstudents
+                            $pdo->exec("CREATE TABLE approvedstudents LIKE existstudents");
+                            // Add approval_date column
                             $pdo->exec("ALTER TABLE approvedstudents ADD COLUMN approval_date DATETIME DEFAULT NULL");
-                        }
-                        
-                        // Check if status column exists, if not add it
-                        $stmt = $pdo->prepare("SHOW COLUMNS FROM approvedstudents LIKE 'status'");
-                        $stmt->execute();
-                        if ($stmt->rowCount() == 0) {
                             $pdo->exec("ALTER TABLE approvedstudents ADD COLUMN status ENUM('approved', 'rejected') DEFAULT 'approved'");
+                        } else {
+                            // Check if approval_date column exists, if not add it
+                            $stmt = $pdo->prepare("SHOW COLUMNS FROM approvedstudents LIKE 'approval_date'");
+                            $stmt->execute();
+                            if ($stmt->rowCount() == 0) {
+                                $pdo->exec("ALTER TABLE approvedstudents ADD COLUMN approval_date DATETIME DEFAULT NULL");
+                            }
+                            
+                            // Check if status column exists, if not add it
+                            $stmt = $pdo->prepare("SHOW COLUMNS FROM approvedstudents LIKE 'status'");
+                            $stmt->execute();
+                            if ($stmt->rowCount() == 0) {
+                                $pdo->exec("ALTER TABLE approvedstudents ADD COLUMN status ENUM('approved', 'rejected') DEFAULT 'approved'");
+                            }
                         }
-                    }
-                    
-                    // Check if student is already in approvedstudents table
-                    $stmt = $pdo->prepare("SELECT * FROM approvedstudents WHERE registration_number = :reg_no");
-                    $stmt->bindParam(':reg_no', $student['registration_number'], PDO::PARAM_STR);
-                    $stmt->execute();
-                    
-                    if ($stmt->rowCount() > 0) {
-                        // Update existing record
-                        $sql = "UPDATE approvedstudents SET 
-                                name_of_student = :name, 
-                                registration_type = :type, 
-                                class = :class, 
-                                division = :division, 
-                                receipt_tuition = :tuition, 
-                                receipt_stationary = :stationary, 
-                                receipt_cs = :cs, 
-                                receipt_it = :it, 
-                                receipt_pta = :pta,
-                                approval_date = NOW(),
-                                status = 'approved'
-                                WHERE registration_number = :reg_no";
-                                
-                        $stmt = $pdo->prepare($sql);
-                        $stmt->bindParam(':name', $student['name_of_student'], PDO::PARAM_STR);
-                        $stmt->bindParam(':type', $student['registration_type'], PDO::PARAM_STR);
-                        $stmt->bindParam(':class', $student['class'], PDO::PARAM_STR);
-                        $stmt->bindParam(':division', $student['division'], PDO::PARAM_STR);
-                        $stmt->bindParam(':tuition', $student['receipt_tuition'], PDO::PARAM_LOB);
-                        $stmt->bindParam(':stationary', $student['receipt_stationary'], PDO::PARAM_LOB);
-                        $stmt->bindParam(':cs', $student['receipt_cs'], PDO::PARAM_LOB);
-                        $stmt->bindParam(':it', $student['receipt_it'], PDO::PARAM_LOB);
-                        $stmt->bindParam(':pta', $student['receipt_pta'], PDO::PARAM_LOB);
+                        
+                        // Create a copy of the student data with only the selected receipts
+                        $approved_student = $student;
+                        
+                        // Map receipt types to database columns
+                        $column_mapping = [
+                            'tuition' => 'receipt_tuition',
+                            'stationary' => 'receipt_stationary',
+                            'cs' => 'receipt_cs',
+                            'it' => 'receipt_it',
+                            'pta' => 'receipt_pta'
+                        ];
+                        
+                        // Clear all receipts that are not selected
+                        foreach ($column_mapping as $type => $column) {
+                            if (!in_array($type, $receipt_types)) {
+                                $approved_student[$column] = null;
+                            }
+                        }
+                        
+                        // Check if student is already in approvedstudents table
+                        $stmt = $pdo->prepare("SELECT * FROM approvedstudents WHERE registration_number = :reg_no");
                         $stmt->bindParam(':reg_no', $student['registration_number'], PDO::PARAM_STR);
                         $stmt->execute();
                         
-                        $approve_success = "Student " . htmlspecialchars($student['name_of_student']) . 
-                                           " (Reg #: " . htmlspecialchars($student['registration_number']) . 
-                                           ") has been updated in the approved students list.";
+                        if ($stmt->rowCount() > 0) {
+                            // Update existing record with only selected receipts
+                            $sql = "UPDATE approvedstudents SET 
+                                    name_of_student = :name, 
+                                    registration_type = :type, 
+                                    class = :class, 
+                                    division = :division, 
+                                    receipt_tuition = :tuition, 
+                                    receipt_stationary = :stationary, 
+                                    receipt_cs = :cs, 
+                                    receipt_it = :it, 
+                                    receipt_pta = :pta,
+                                    approval_date = NOW(),
+                                    status = 'approved'
+                                    WHERE registration_number = :reg_no";
+                                    
+                            $stmt = $pdo->prepare($sql);
+                            $stmt->bindParam(':name', $approved_student['name_of_student'], PDO::PARAM_STR);
+                            $stmt->bindParam(':type', $approved_student['registration_type'], PDO::PARAM_STR);
+                            $stmt->bindParam(':class', $approved_student['class'], PDO::PARAM_STR);
+                            $stmt->bindParam(':division', $approved_student['division'], PDO::PARAM_STR);
+                            $stmt->bindParam(':tuition', $approved_student['receipt_tuition'], PDO::PARAM_LOB);
+                            $stmt->bindParam(':stationary', $approved_student['receipt_stationary'], PDO::PARAM_LOB);
+                            $stmt->bindParam(':cs', $approved_student['receipt_cs'], PDO::PARAM_LOB);
+                            $stmt->bindParam(':it', $approved_student['receipt_it'], PDO::PARAM_LOB);
+                            $stmt->bindParam(':pta', $approved_student['receipt_pta'], PDO::PARAM_LOB);
+                            $stmt->bindParam(':reg_no', $approved_student['registration_number'], PDO::PARAM_STR);
+                            $stmt->execute();
+                            
+                            $approve_success = "Student " . htmlspecialchars($student['name_of_student']) . 
+                                               " (Reg #: " . htmlspecialchars($student['registration_number']) . 
+                                               ") has been updated in the approved students list with " . count($receipt_types) . " selected receipts.";
+                        } else {
+                            // Insert new record with only selected receipts
+                            $sql = "INSERT INTO approvedstudents 
+                                    (registration_number, name_of_student, registration_type, class, division, 
+                                    receipt_tuition, receipt_stationary, receipt_cs, receipt_it, receipt_pta, approval_date, status) 
+                                    VALUES 
+                                    (:reg_no, :name, :type, :class, :division, 
+                                    :tuition, :stationary, :cs, :it, :pta, NOW(), 'approved')";
+                                    
+                            $stmt = $pdo->prepare($sql);
+                            $stmt->bindParam(':reg_no', $approved_student['registration_number'], PDO::PARAM_STR);
+                            $stmt->bindParam(':name', $approved_student['name_of_student'], PDO::PARAM_STR);
+                            $stmt->bindParam(':type', $approved_student['registration_type'], PDO::PARAM_STR);
+                            $stmt->bindParam(':class', $approved_student['class'], PDO::PARAM_STR);
+                            $stmt->bindParam(':division', $approved_student['division'], PDO::PARAM_STR);
+                            $stmt->bindParam(':tuition', $approved_student['receipt_tuition'], PDO::PARAM_LOB);
+                            $stmt->bindParam(':stationary', $approved_student['receipt_stationary'], PDO::PARAM_LOB);
+                            $stmt->bindParam(':cs', $approved_student['receipt_cs'], PDO::PARAM_LOB);
+                            $stmt->bindParam(':it', $approved_student['receipt_it'], PDO::PARAM_LOB);
+                            $stmt->bindParam(':pta', $approved_student['receipt_pta'], PDO::PARAM_LOB);
+                            $stmt->execute();
+                            
+                            $approve_success = "Student " . htmlspecialchars($student['name_of_student']) . 
+                                               " (Reg #: " . htmlspecialchars($student['registration_number']) . 
+                                               ") has been approved with " . count($receipt_types) . " selected receipts.";
+                        }
                     } else {
-                        // Insert new record
-                        $sql = "INSERT INTO approvedstudents 
-                                (registration_number, name_of_student, registration_type, class, division, 
-                                receipt_tuition, receipt_stationary, receipt_cs, receipt_it, receipt_pta, approval_date, status) 
-                                VALUES 
-                                (:reg_no, :name, :type, :class, :division, 
-                                :tuition, :stationary, :cs, :it, :pta, NOW(), 'approved')";
-                                
-                        $stmt = $pdo->prepare($sql);
-                        $stmt->bindParam(':reg_no', $student['registration_number'], PDO::PARAM_STR);
-                        $stmt->bindParam(':name', $student['name_of_student'], PDO::PARAM_STR);
-                        $stmt->bindParam(':type', $student['registration_type'], PDO::PARAM_STR);
-                        $stmt->bindParam(':class', $student['class'], PDO::PARAM_STR);
-                        $stmt->bindParam(':division', $student['division'], PDO::PARAM_STR);
-                        $stmt->bindParam(':tuition', $student['receipt_tuition'], PDO::PARAM_LOB);
-                        $stmt->bindParam(':stationary', $student['receipt_stationary'], PDO::PARAM_LOB);
-                        $stmt->bindParam(':cs', $student['receipt_cs'], PDO::PARAM_LOB);
-                        $stmt->bindParam(':it', $student['receipt_it'], PDO::PARAM_LOB);
-                        $stmt->bindParam(':pta', $student['receipt_pta'], PDO::PARAM_LOB);
-                        $stmt->execute();
-                        
-                        $approve_success = "Student " . htmlspecialchars($student['name_of_student']) . 
-                                           " (Reg #: " . htmlspecialchars($student['registration_number']) . 
-                                           ") has been approved and added to the approved students list.";
+                        $approve_error = "Student not found.";
                     }
-                } else {
-                    $approve_error = "Student not found.";
+                } catch (PDOException $e) {
+                    $approve_error = "Database error: " . $e->getMessage();
                 }
-            } catch (PDOException $e) {
-                $approve_error = "Database error: " . $e->getMessage();
             }
         }
         
@@ -571,6 +595,13 @@ if ($authenticated) {
             justify-content: center;
             gap: 3px;
             flex-wrap: wrap; /* Allow buttons to wrap on very small screens */
+            align-items: center;
+        }
+        .receipt-checkbox {
+            margin: 0 2px;
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
         }
         .view-link {
             background-color: #3498db;
@@ -826,6 +857,7 @@ if ($authenticated) {
                                         </span>
                                         <?php if ($student['has_tuition_receipt'] === 'Yes'): ?>
                                             <div class="receipt-actions">
+                                                <input type="checkbox" class="receipt-checkbox" data-student-id="<?php echo $student['id']; ?>" data-receipt-type="tuition">
                                                 <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'tuition')" 
                                                    class="view-link">View</a>
                                                 <a href="javascript:void(0);" onclick="confirmDeleteReceipt(<?php echo $student['id']; ?>, 'tuition')" 
@@ -841,6 +873,7 @@ if ($authenticated) {
                                         </span>
                                         <?php if ($student['has_stationary_receipt'] === 'Yes'): ?>
                                             <div class="receipt-actions">
+                                                <input type="checkbox" class="receipt-checkbox" data-student-id="<?php echo $student['id']; ?>" data-receipt-type="stationary">
                                                 <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'stationary')" 
                                                    class="view-link">View</a>
                                                 <a href="javascript:void(0);" onclick="confirmDeleteReceipt(<?php echo $student['id']; ?>, 'stationary')" 
@@ -856,6 +889,7 @@ if ($authenticated) {
                                         </span>
                                         <?php if ($student['has_cs_receipt'] === 'Yes'): ?>
                                             <div class="receipt-actions">
+                                                <input type="checkbox" class="receipt-checkbox" data-student-id="<?php echo $student['id']; ?>" data-receipt-type="cs">
                                                 <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'cs')" 
                                                    class="view-link">View</a>
                                                 <a href="javascript:void(0);" onclick="confirmDeleteReceipt(<?php echo $student['id']; ?>, 'cs')" 
@@ -871,6 +905,7 @@ if ($authenticated) {
                                         </span>
                                         <?php if ($student['has_it_receipt'] === 'Yes'): ?>
                                             <div class="receipt-actions">
+                                                <input type="checkbox" class="receipt-checkbox" data-student-id="<?php echo $student['id']; ?>" data-receipt-type="it">
                                                 <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'it')" 
                                                    class="view-link">View</a>
                                                 <a href="javascript:void(0);" onclick="confirmDeleteReceipt(<?php echo $student['id']; ?>, 'it')" 
@@ -886,6 +921,7 @@ if ($authenticated) {
                                         </span>
                                         <?php if ($student['has_pta_receipt'] === 'Yes'): ?>
                                             <div class="receipt-actions">
+                                                <input type="checkbox" class="receipt-checkbox" data-student-id="<?php echo $student['id']; ?>" data-receipt-type="pta">
                                                 <a href="javascript:void(0);" onclick="showReceipt(<?php echo $student['id']; ?>, 'pta')" 
                                                    class="view-link">View</a>
                                                 <a href="javascript:void(0);" onclick="confirmDeleteReceipt(<?php echo $student['id']; ?>, 'pta')" 
@@ -963,8 +999,18 @@ if ($authenticated) {
         
         // Student approval function
         function approveStudent(studentId) {
-            if (confirm("Are you sure you want to APPROVE this student and add them to the approved students list?")) {
+            // Get all checked receipt checkboxes for this student
+            const checkedReceipts = document.querySelectorAll(`.receipt-checkbox[data-student-id="${studentId}"]:checked`);
+            const receiptTypes = Array.from(checkedReceipts).map(checkbox => checkbox.getAttribute('data-receipt-type'));
+            
+            if (receiptTypes.length === 0) {
+                alert("Please select at least one receipt to approve.");
+                return;
+            }
+            
+            if (confirm("Are you sure you want to APPROVE this student with the selected receipts?")) {
                 window.location.href = "?approve_student=1&student_id=" + studentId + 
+                    "&receipt_types=" + JSON.stringify(receiptTypes) +
                     "&csrf_token=<?php echo $_SESSION['csrf_token']; ?>";
             }
         }
@@ -985,6 +1031,23 @@ if ($authenticated) {
                     "&csrf_token=<?php echo $_SESSION['csrf_token']; ?>";
             }
         }
+        
+        // Basic checkbox functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('.receipt-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    // You can add custom code here to handle checkbox changes
+                    // This will be expanded in future functionality
+                    console.log('Receipt selected:', {
+                        studentId: this.getAttribute('data-student-id'),
+                        receiptType: this.getAttribute('data-receipt-type'),
+                        checked: this.checked
+                    });
+                });
+            });
+        });
     </script>
 </body>
 </html> 
