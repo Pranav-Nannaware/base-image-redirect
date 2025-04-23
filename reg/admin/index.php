@@ -28,7 +28,7 @@ if (isset($_GET['logout'])) {
 
 // Basic authentication - in a real implementation, use proper authentication
 $admin_username = 'admin';
-$admin_password = 'admin123'; // This should be properly hashed in production
+$admin_password = 'Bes_IT#123'; // This should be properly hashed in production
 
 // Check if user is already authenticated
 $authenticated = false;
