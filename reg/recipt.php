@@ -204,12 +204,12 @@ if (isset($_GET['download']) && $_GET['download'] == 'pdf') {
        }
        /* A5 size for printing */
        @page {
-           size: A5;
+           size: B5;
            margin: 0;
        }
        .receipt-container {
-           width: 148mm; /* A5 width */
-           height: 210mm; /* A5 height */
+           width: 176mm; /* B5 width */
+           height: 250mm; /* B5 height */
            margin: 0;
            padding: 15mm;
            box-sizing: border-box;
@@ -221,8 +221,8 @@ if (isset($_GET['download']) && $_GET['download'] == 'pdf') {
        font-family: 'Roboto', sans-serif;
    }
    .receipt-container {
-       width: 148mm; /* A5 width */
-       height: 210mm; /* A5 height */
+       width: 176mm; /* B5 width */
+       height: 250mm; /* B5 height */
        margin: 0 auto;
        padding: 15mm;
        box-sizing: border-box;
