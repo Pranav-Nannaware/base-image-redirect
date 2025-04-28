@@ -28,7 +28,7 @@ if (isset($_GET['logout'])) {
 
 // Basic authentication - in a real implementation, use proper authentication
 $admin_username = 'admin';
-$admin_password = 'Bes_IT#123'; // This should be properly hashed in production
+$admin_password = 'admin#123'; // This should be properly hashed in production
 
 // Check if user is already authenticated
 $authenticated = false;
@@ -192,6 +192,12 @@ if (isset($_SESSION['admin_authenticated']) && $_SESSION['admin_authenticated'] 
                     <h3>View Approved Students</h3>
                     <p>View the list of approved and rejected students with their details.</p>
                     <a href="view_approved_students.php" class="btn">Access</a>
+                </div>
+                
+                <div class="admin-card">
+                    <h3>Export Student Data</h3>
+                    <p>Download student data as Excel format with filter options.</p>
+                    <a href="export_student_data.php" class="btn">Access</a>
                 </div>
                 
                 <!-- Add more admin functions as needed -->
